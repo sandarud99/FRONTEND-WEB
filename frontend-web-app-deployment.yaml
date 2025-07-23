@@ -1,0 +1,67 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: frontend-web-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: frontend-web-app
+  name: deployment-frontend
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: app-frontend
+  replicas: 3  
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: app-frontend
+    spec:
+      containers:
+      - image: sandarud99/lugx-gaming-frontend:latest  
+        imagePullPolicy: Always
+        name: app-frontend
+        ports:
+        - containerPort: 80  
+      tolerations:
+        - key: "eks.amazonaws.com/compute-type"
+          operator: "Equal"
+          value: "fargate"
+          effect: "NoSchedule"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: frontend-web-app
+  name: service-frontend
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  type: NodePort  
+  selector:
+    app.kubernetes.io/name: app-frontend
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: frontend-web-app
+  name: ingress-frontend
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb  
+  rules:
+    - http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: service-frontend
+              port:
+                number: 80
