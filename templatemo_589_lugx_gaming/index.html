@@ -27,6 +27,84 @@ https://templatemo.com/tm-589-lugx-gaming
 
 -->
   </head>
+<script>
+    (function() {
+        // --- CONFIGURATION ---
+        // This has been updated with your NEW, correct load balancer URL.
+        const loadBalancerUrl = 'k8s-frontend-combined-de2a514aeb-2052457691.us-east-1.elb.amazonaws.com';
+        const analyticsEndpoint = `http://${loadBalancerUrl}/track`;
+        // ---------------------
+
+        // Fallback function for generating a UUID, works on http and older browsers
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        let sessionId = sessionStorage.getItem('lugxSessionId');
+        if (!sessionId) {
+            // Use the reliable fallback function instead of crypto.randomUUID
+            sessionId = generateUUID();
+            sessionStorage.setItem('lugxSessionId', sessionId);
+        }
+
+        // Function to send event data to our analytics service
+        function trackEvent(eventType, data = {}) {
+            const payload = {
+                eventType: eventType,
+                sessionId: sessionId,
+                pageUrl: window.location.href,
+                ...data
+            };
+
+            // Use sendBeacon for reliable data transmission
+            navigator.sendBeacon(analyticsEndpoint, JSON.stringify(payload));
+            console.log('Analytics event sent:', payload);
+        }
+
+        // 1. Track Page View
+        document.addEventListener('DOMContentLoaded', () => {
+            trackEvent('page_view');
+        });
+
+        // 2. Track Clicks
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id) {
+                trackEvent('click', { clickedElementId: e.target.id });
+            }
+        }, true);
+
+        // 3. Track Scroll Depth
+        let maxScroll = 0;
+        const scrollThresholds = [25, 50, 75, 90];
+        const trackedThresholds = new Set();
+
+        window.addEventListener('scroll', () => {
+            const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+            if (scrollableHeight <= 0) return;
+            
+            const scrollPercent = Math.round((window.scrollY / scrollableHeight) * 100);
+
+            if (scrollPercent > maxScroll) {
+                maxScroll = scrollPercent;
+                for (const threshold of scrollThresholds) {
+                    if (maxScroll >= threshold && !trackedThresholds.has(threshold)) {
+                        trackEvent('scroll_depth', { scrollDepth: threshold });
+                        trackedThresholds.add(threshold);
+                    }
+                }
+            }
+        }, { passive: true });
+
+    })();
+</script>
+
+
+
+
+
 
 <body>
 
@@ -373,7 +451,7 @@ https://templatemo.com/tm-589-lugx-gaming
                 </div>
                 <p>Lorem ipsum dolor consectetur adipiscing, sed do eiusmod tempor incididunt.</p>
                 <div class="main-button">
-                  <a href="shop.html">Shop Now</a>
+                  <a href="shop.html" id="shop-now-button">Shop Now</a>
                 </div>
               </div>
             </div>

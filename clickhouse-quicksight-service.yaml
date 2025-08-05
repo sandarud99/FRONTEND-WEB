@@ -1,0 +1,16 @@
+# clickhouse-quicksight-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse-quicksight-service
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-internal: "false" # <-- Add this line
+spec:
+  selector:
+    app: clickhouse
+  ports:
+    - protocol: TCP
+      port: 9004
+      targetPort: 9004
+      name: mysql
+  type: LoadBalancer

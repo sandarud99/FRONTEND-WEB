@@ -1,0 +1,13 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: sandaru-final-cluster
+  region: us-east-1
+  version: "1.28" # Using a specific, stable version is good practice
+
+managedNodeGroups:
+  - name: standard-workers
+    instanceType: m7i-flex.large # <-- CORRECTED AVAILABLE INSTANCE TYPE
+    desiredCapacity: 2
+    volumeSize: 50 # Giving nodes a bit more disk space

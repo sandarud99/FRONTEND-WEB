@@ -1,0 +1,15 @@
+# This file creates a stable network endpoint for ClickHouse inside the cluster.
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse
+  namespace: default
+spec:
+  ports:
+  - port: 8123
+    name: http
+  # This makes the service "headless," which is standard for StatefulSets.
+  # It allows other pods to find the ClickHouse pod directly by its DNS name.
+  clusterIP: None
+  selector:
+    app: clickhouse

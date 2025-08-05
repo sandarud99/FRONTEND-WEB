@@ -1,0 +1,37 @@
+# Deployment to run the analytics service pods
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-deployment
+  namespace: frontend-web-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: analytics-api
+  template:
+    metadata:
+      labels:
+        app: analytics-api
+    spec:
+      containers:
+        - name: analytics-api-container
+          # --- THIS IS THE LINE TO FIX ---
+          image: sandarud99/analytics-service:latest 
+          # -----------------------------
+          ports:
+            - containerPort: 8080
+---
+# Service to give the pods a stable internal network address
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: frontend-web-app # <-- CHANGED to the frontend namespace
+spec:
+  selector:
+    app: analytics-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
