@@ -15,8 +15,6 @@ const clickhouseClient = createClient({
     // ---------------------------
 });
 
-//change
-//c
 app.post('/track', async (req, res) => {
     try {
         const event = JSON.parse(req.body);
